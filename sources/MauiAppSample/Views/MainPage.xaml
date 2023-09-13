@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:MauiAppSample.Models"
+             xmlns:viewModels="clr-namespace:MauiAppSample.ViewModels"
+             x:Class="MauiAppSample.Views.MainPage"
+             x:DataType="viewModels:MainPageViewModel"
+             Title="{Binding Title}">
+
+    <Grid ColumnDefinitions="*,*"
+          ColumnSpacing="5"
+          RowDefinitions="*,Auto"
+          RowSpacing="0">
+
+        <CollectionView ItemsSource="{Binding Readings}"
+                        Grid.ColumnSpan="2"
+                        SelectionMode="None">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:GasMeterReading">
+                    <Grid Padding="10,5">
+                        <Frame HeightRequest="55"
+                               Padding="10,5">
+                            <VerticalStackLayout>
+                                <Label Text="{Binding Created, StringFormat='{0:dd.MM.yyyy}'}"
+                                       FontAttributes="Bold"
+                                       FontSize="16" />
+                                <Label Text="{Binding MeterValue, StringFormat='{0} m3'}"
+                                       FontAttributes="Bold"
+                                       FontSize="16" />
+                            </VerticalStackLayout>
+                        </Frame>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
+
+        <HorizontalStackLayout Grid.Row="1"
+                               Grid.ColumnSpan="2"
+                               HorizontalOptions="Center">
+            <Button Text="Get data"
+                    Margin="8"
+                    Command="{Binding GetReadingsCommand}"
+                    IsEnabled="{Binding IsNotBusy}" />
+            <Button Text="Search"
+                    Margin="8" />
+        </HorizontalStackLayout>
+
+        <ActivityIndicator IsVisible="{Binding IsBusy}"
+                           IsRunning="{Binding IsBusy}"
+                           HorizontalOptions="Fill"
+                           VerticalOptions="Center"
+                           Grid.ColumnSpan="2"
+                           Grid.RowSpan="2" />
+    </Grid>
+
+</ContentPage>
