@@ -14,7 +14,7 @@ internal class GasMeterReadingService : IGasMeterReadingService
         
     public async Task<List<GasMeterReading>> GetAllAsync()
     {
-        await Task.Delay(TimeSpan.FromSeconds(5));
+        await Task.Delay(TimeSpan.FromSeconds(1));
         return _readings;
     }
 }

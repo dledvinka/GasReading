@@ -4,12 +4,13 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MauiAppSample.Interfaces;
 using MauiAppSample.Models;
+using MauiAppSample.Views;
 
 public partial class MainPageViewModel : BaseViewModel
 {
     private readonly IGasMeterReadingService _gasMeterReadingService;
 
-    [ObservableProperty] 
+    [ObservableProperty]
     private List<GasMeterReading> _readings;
 
 
@@ -17,6 +18,15 @@ public partial class MainPageViewModel : BaseViewModel
     {
         Title = "Reading list";
         _gasMeterReadingService = gasMeterReadingService;
+    }
+
+    [RelayCommand]
+    public async Task GoToDetailAsync(GasMeterReading reading)
+    {
+        if (reading is null)
+            return;
+
+        await Shell.Current.GoToAsync($"{nameof(DetailPage)}", true, new Dictionary<string, object>() { { "Reading", reading } });
     }
 
     [RelayCommand]

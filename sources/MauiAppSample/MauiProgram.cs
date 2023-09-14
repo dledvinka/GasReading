@@ -24,9 +24,16 @@ public static class MauiProgram
         builder.Logging.AddDebug();
 #endif
 
+        // services
         builder.Services.AddSingleton<IGasMeterReadingService, GasMeterReadingService>();
+        
+        // view models
         builder.Services.AddSingleton<MainPageViewModel>();
+        builder.Services.AddTransient<DetailPageViewModel>();
+
+        // views
         builder.Services.AddSingleton<MainPage>();
+        builder.Services.AddTransient<DetailPage>();
 
         return builder.Build();
     }

@@ -20,6 +20,10 @@
                     <Grid Padding="10,5">
                         <Frame HeightRequest="55"
                                Padding="10,5">
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewModels:MainPageViewModel}}, Path=GoToDetailCommand}"
+                                                      CommandParameter="{Binding .}" />
+                            </Frame.GestureRecognizers>
                             <VerticalStackLayout>
                                 <Label Text="{Binding Created, StringFormat='{0:dd.MM.yyyy}'}"
                                        FontAttributes="Bold"
