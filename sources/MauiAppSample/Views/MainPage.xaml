@@ -7,37 +7,57 @@
              x:DataType="viewModels:MainPageViewModel"
              Title="{Binding Title}">
 
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="REFRESH"
+                     Command="{Binding GetReadingsCommand}" />
+    </ContentPage.ToolbarItems>
+
     <Grid ColumnDefinitions="*,*"
           ColumnSpacing="5"
           RowDefinitions="*,Auto"
           RowSpacing="0">
 
-        <CollectionView ItemsSource="{Binding Readings}"
-                        Grid.ColumnSpan="2"
-                        SelectionMode="None">
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="models:GasMeterReading">
-                    <Grid Padding="10,5">
-                        <Frame HeightRequest="55"
-                               Padding="10,5">
-                            <Frame.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewModels:MainPageViewModel}}, Path=GoToDetailCommand}"
-                                                      CommandParameter="{Binding .}" />
-                            </Frame.GestureRecognizers>
-                            <VerticalStackLayout>
-                                <Label Text="{Binding Created, StringFormat='{0:dd.MM.yyyy}'}"
-                                       FontAttributes="Bold"
-                                       FontSize="16" />
-                                <Label Text="{Binding MeterValue, StringFormat='{0} m3'}"
-                                       FontAttributes="Bold"
-                                       FontSize="16" />
-                            </VerticalStackLayout>
-                        </Frame>
-                    </Grid>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
+        <RefreshView Grid.ColumnSpan="2"
+                     Command="{Binding GetReadingsCommand}"
+                     IsRefreshing="{Binding IsRefreshing}">
+            <CollectionView ItemsSource="{Binding Readings}"
+                            SelectionMode="None">
+                <CollectionView.EmptyView>
+                    <StackLayout VerticalOptions="Center"
+                                 HorizontalOptions="Center"
+                                 WidthRequest="200"
+                                 HeightRequest="200">
+                        <Label Text="No data loaded" />
+                    </StackLayout>
+                </CollectionView.EmptyView>
+                <!--<CollectionView.ItemsLayout>
+                    <GridItemsLayout Span="2"
+                                     Orientation="Horizontal" />
+                </CollectionView.ItemsLayout>-->
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:GasMeterReading">
+                        <Grid Padding="10,5">
+                            <Frame HeightRequest="55"
+                                   Padding="10,5">
+                                <Frame.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewModels:MainPageViewModel}}, Path=GoToDetailCommand}"
+                                                          CommandParameter="{Binding .}" />
+                                </Frame.GestureRecognizers>
+                                <VerticalStackLayout>
+                                    <Label Text="{Binding Created, StringFormat='{0:dd.MM.yyyy}'}"
+                                           FontAttributes="Bold"
+                                           FontSize="16" />
+                                    <Label Text="{Binding MeterValue, StringFormat='{0} m3'}"
+                                           FontAttributes="Bold"
+                                           FontSize="16" />
+                                </VerticalStackLayout>
+                            </Frame>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
 
-        </CollectionView>
+            </CollectionView>
+        </RefreshView>
 
         <HorizontalStackLayout Grid.Row="1"
                                Grid.ColumnSpan="2"

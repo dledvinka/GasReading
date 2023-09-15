@@ -13,11 +13,17 @@ public partial class MainPageViewModel : BaseViewModel
     [ObservableProperty]
     private List<GasMeterReading> _readings;
 
+    [ObservableProperty]
+    private bool _isRefreshing;
 
-    public MainPageViewModel(IGasMeterReadingService gasMeterReadingService)
+    private IConnectivity _connectivity;
+
+
+    public MainPageViewModel(IGasMeterReadingService gasMeterReadingService, IConnectivity connectivity)
     {
         Title = "Reading list";
         _gasMeterReadingService = gasMeterReadingService;
+        _connectivity = connectivity;
     }
 
     [RelayCommand]
@@ -37,6 +43,12 @@ public partial class MainPageViewModel : BaseViewModel
 
         try
         {
+            if (_connectivity.NetworkAccess != NetworkAccess.Internet)
+            {
+                await Shell.Current.DisplayAlert("Internet issue", "Check your internet and come again!", "OK");
+                return;
+            }
+
             IsBusy = true;
             Readings = await _gasMeterReadingService.GetAllAsync();
         }
@@ -47,6 +59,7 @@ public partial class MainPageViewModel : BaseViewModel
         finally
         {
             IsBusy = false;
+            IsRefreshing = false;
         }
     }
 }

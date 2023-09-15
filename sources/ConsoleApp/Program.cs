@@ -6,28 +6,112 @@
 
 
 using System.Net.Http.Headers;
-using System.Net.Mime;
-using System.Text;
 using System.Web;
-using System.Drawing.Imaging;
-using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
 using Newtonsoft.Json;
 using JsonSerializer = System.Text.Json.JsonSerializer;
+using Azure.Data.Tables;
+using ConsoleApp;
+using Core.Entities;
+using Microsoft.Extensions.Configuration;
 
 Console.WriteLine("Hello, World!");
 
-await MakeRequest();
+var config = new ConfigurationBuilder()
+                            .AddJsonFile("appsettings.json")
+                            .AddEnvironmentVariables()
+                            .Build();
+
+var settings = config.GetRequiredSection("Settings").Get<Settings>();
+
+if (settings is null)
+    return;
+
+await TestTableAccess();
+
+
+
+//await MakeRequest();
 Console.WriteLine("Hit ENTER to exit...");
 Console.ReadLine();
 
-static async Task MakeRequest()
+async Task TestTableAccess()
+{
+    //var tableServiceEndpoint = @"https://gasreadingappstorage.table.core.windows.net/";
+    var tableName = "GasReadings";
+
+    //var accountName = "gasreadingappstorage";
+    //var storageAccountKey = "84RiPJyG3Fs5uXMWFwJcmJ1lzJcckjHKK1uQDMQ+EQNno/rw/hX2f2jvrka+tg3jzhSSSRZajem0+AStbYRZFg==";
+
+
+    // Azure.Data.Tables
+    // https://github.com/Azure/azure-sdk-for-net/blob/Azure.Data.Tables_12.8.1/sdk/tables/Azure.Data.Tables/README.md
+
+
+    // Construct a new <see cref="TableClient" /> using a <see cref="TableSharedKeyCredential" />.
+    var tableClient = new TableClient(new Uri(settings.AzureTableStorageServiceEndpoint),
+                                      tableName,
+                                      new TableSharedKeyCredential(settings.AzureTableStorageAccountName, settings.AzureTableStoragePassword));
+    
+    //var deleteResponse = await tableClient.DeleteAsync();
+
+    // Create the table in the service.
+    var createResponse = await tableClient.CreateIfNotExistsAsync();
+
+    var lines = await File.ReadAllLinesAsync("InitialValues.csv");
+
+    foreach (var line in lines)
+    {
+        var splitValues = line.Split(',');
+
+        var date = DateTime.SpecifyKind(DateTime.Parse(splitValues[0]), DateTimeKind.Utc);
+        var meterValue = double.Parse(splitValues[1]);
+
+        var newEntry = new GasMeterReading()
+        {
+            PartitionKey = Guid.NewGuid().ToString(),
+            RowKey = Guid.NewGuid().ToString(),
+
+            ReadingDateUtc = date,
+            MeterValue = meterValue
+        };
+
+        var response = await tableClient.AddEntityAsync(newEntry);
+    }
+
+    //var initialMeterValue = 5000.0;
+
+    //for (var i = 0; i < 20; i++)
+    //{
+    //    var newEntry = new GasMeterReading()
+    //    {
+    //        PartitionKey = Guid.NewGuid().ToString(),
+    //        RowKey = Guid.NewGuid().ToString(),
+
+    //        ReadingDateUtc = DateTime.UtcNow.AddMonths(-i),
+    //        MeterValue = initialMeterValue - i * 200.0
+    //    };
+
+    //    var response = await tableClient.AddEntityAsync(newEntry);
+    //}
+
+    var queryResultsFilter = tableClient.Query<GasMeterReading>();
+
+    // Iterate the <see cref="Pageable"> to access all queried entities.
+    foreach (var qEntity in queryResultsFilter.OrderBy(reading => reading.ReadingDateUtc))
+    {
+        Console.WriteLine($"{qEntity.ReadingDateUtc.Date.ToShortDateString()}: {qEntity.MeterValue}");
+    }
+
+    Console.WriteLine($"The query returned {queryResultsFilter.Count()} entities.");
+}
+
+async Task MakeRequest()
 {
     var client = new HttpClient();
     var queryString = HttpUtility.ParseQueryString(string.Empty);
     
-    var resourceName = "xxx";
-    var apiKey = "xxx";
+    var resourceName = settings.AzureCognitiveServicesResourceName;
+    var apiKey = settings.AzureCognitiveServicesApiKey;
 
     // Request headers
     client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", apiKey);
